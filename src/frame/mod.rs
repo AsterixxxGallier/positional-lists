@@ -1,13 +1,50 @@
 use std::assert_matches::debug_assert_matches;
 use num_traits::zero;
+use slotmap::{new_key_type, SlotMap};
 use crate::{Position, Element};
 
-pub type FrameIndex = usize;
+new_key_type! { pub struct FrameKey; }
+
+pub struct PointList<P: Position, E: Element> {
+    frames: SlotMap<FrameKey, Frame<P, E>>,
+    root: Option<FrameKey>,
+
+    start: P,
+
+    len: usize,
+}
+
+impl<P: Position, E: Element> PointList<P, E> {
+    pub fn new() -> Self {
+        Self {
+            frames: SlotMap::with_key(),
+            root: None,
+            start: zero(),
+            len: 0,
+        }
+    }
+
+    pub fn add_element(&mut self, element: E, distance_from_last: P) {
+        self.len += 1;
+        if let Some(root_key) = self.root {
+            // Distances of zero are not allowed.
+            assert!(distance_from_last > zero());
+
+            let frame = &mut self.frames[root_key];
+            frame.add_element(element, distance_from_last);
+        } else {
+            self.start = distance_from_last;
+
+            let root_key = self.frames.insert(Frame::new_with_element(element));
+            self.root = Some(root_key);
+        }
+    }
+}
 
 #[derive(Debug)]
 pub enum Slot<E: Element> {
     Element(E),
-    Frame(FrameIndex),
+    Frame(FrameKey),
     Empty,
 }
 
