@@ -5,17 +5,23 @@
 
 #![allow(dead_code)]
 
-mod position;
-mod element;
+mod trait_aliases;
+mod point_list;
 mod frame;
+mod index;
 
 #[doc(inline)]
 pub use {
-    position::Position,
-    element::Element,
+    trait_aliases::Element,
+    trait_aliases::Position,
+    point_list::PointList,
 };
 
+#[allow(unused_imports)]
 pub(crate) use {
     frame::Frame,
+    frame::FrameKey,
     frame::Slot,
+    index::EphemeralIndex,
+    index::PersistentIndex,
 };
