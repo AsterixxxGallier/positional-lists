@@ -31,15 +31,20 @@ impl<P: Position, E: Element> Frame<P, E> {
         }
     }
 
-    /// `distance_from_last` must be non-negative.
-    pub fn add_element(&mut self, element: E, distance_from_last: P) {
-        debug_assert!(distance_from_last > zero());
-
+    fn check_invariants(&self) {
         debug_assert!(!self.slots.is_empty());
+        debug_assert_eq!(self.slots.len(), self.distances.len() + 1);
         debug_assert_matches!(self.slots.last(), Some(Slot::Element(_)));
         // Check that self.depth has the correct value.
         debug_assert!(self.distances.len() < 1 << self.depth);
         debug_assert!(self.distances.len() >= (1 << self.depth) >> 1);
+    }
+
+    /// `distance_from_last` must be non-negative.
+    pub fn add_element(&mut self, element: E, distance_from_last: P) {
+        debug_assert!(distance_from_last > zero());
+
+        self.check_invariants();
 
         let mut distance = distance_from_last;
         let index = self.distances.len();
