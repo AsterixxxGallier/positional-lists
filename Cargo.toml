@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 num-traits = "0.2.18"
 slotmap = "1.0.7"
+itertools = "0.12.1"

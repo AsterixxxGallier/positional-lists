@@ -15,6 +15,7 @@ pub use {
     trait_aliases::Element,
     trait_aliases::Position,
     point_list::PointList,
+    index::PersistentIndex,
 };
 
 #[allow(unused_imports)]
@@ -22,6 +23,6 @@ pub(crate) use {
     frame::Frame,
     frame::FrameKey,
     frame::Slot,
+    frame::Embedding,
     index::EphemeralIndex,
-    index::PersistentIndex,
 };
