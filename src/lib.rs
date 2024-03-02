@@ -1,14 +1,21 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+// for Position
+#![feature(trait_alias)]
+// for debug_assert_matches
+#![feature(assert_matches)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#![allow(dead_code)]
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+mod position;
+mod element;
+mod frame;
+
+#[doc(inline)]
+pub use {
+    position::Position,
+    element::Element,
+};
+
+pub(crate) use {
+    frame::Frame,
+    frame::Slot,
+};
