@@ -1,12 +1,15 @@
-use slotmap::SlotMap;
+use std::cmp::Ordering;
+use std::fmt::{Debug, Display, Formatter};
+use slotmap::{Key, SlotMap};
 use num_traits::zero;
 use crate::{Position, Element, Frame, EitherFrame, MetaFrame, ElementFrame, Embedding, FrameKey, EphemeralIndex, PersistentIndex};
+use crate::frame::distances::Distances;
 
-#[derive(Debug)]
 pub struct PointList<P: Position, E: Element> {
     frames: SlotMap<FrameKey, EitherFrame<P, E>>,
     root: Option<FrameKey>,
     start: P,
+    end: P,
     len: usize,
     persistent_to_ephemeral: Vec<Option<EphemeralIndex>>,
 }
@@ -34,9 +37,26 @@ impl<P: Position, E: Element> PointList<P, E> {
             frames: SlotMap::with_key(),
             root: None,
             start: zero(),
+            end: zero(),
             len: 0,
             persistent_to_ephemeral: vec![],
         }
+    }
+
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn start(&self) -> P {
+        self.start
+    }
+
+    pub fn end(&self) -> P {
+        self.end
     }
 
     fn next_persistent_index(&self) -> PersistentIndex {
@@ -105,6 +125,8 @@ impl<P: Position, E: Element> PointList<P, E> {
             // Distances of zero are not allowed.
             assert!(distance_from_last > zero());
 
+            self.end += distance_from_last;
+
             self.ensure_element_can_be_added_to_root();
 
             match self.add_element_strategy() {
@@ -125,7 +147,8 @@ impl<P: Position, E: Element> PointList<P, E> {
                     // add current_frame to frame_with_full_last_frame
                     let index = self.frames[frame_with_full_last_frame].unwrap_meta().frames.len();
                     self.frames[current_frame].embed(Embedding::InMetaFrame(EphemeralIndex::new(frame_with_full_last_frame, index)));
-                    self.frames[frame_with_full_last_frame].unwrap_meta_mut().add_frame(current_frame, distance_from_last);
+                    // TODO double-check the self.end - self.start part
+                    self.frames[frame_with_full_last_frame].unwrap_meta_mut().add_frame(current_frame, distance_from_last + (self.end - self.start));
                 }
                 AddElementStrategy::ElementCanBeAddedToExistingElementFrame {
                     element_frame
@@ -138,6 +161,7 @@ impl<P: Position, E: Element> PointList<P, E> {
             }
         } else {
             self.start = distance_from_last;
+            self.end = distance_from_last;
             self.root = Some(self.add_element_frame_with_element(element));
         }
 
@@ -167,6 +191,120 @@ impl<P: Position, E: Element> PointList<P, E> {
             position += frame.distances().position(index.index);
         }
         Some(position)
+    }
+}
+
+impl<P: Position, E: Element> Debug for PointList<P, E> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PointList")
+            .field("start", &self.start)
+            .field("end", &self.end)
+            .field("len", &self.len)
+            .field_with(
+                "persistent_to_ephemeral",
+                |f| {
+                    writeln!(f)?;
+                    for (persistent, ephemeral) in self.persistent_to_ephemeral.iter().enumerate() {
+                        match ephemeral {
+                            Some(ephemeral) => writeln!(f, "{:5}: {:?}/{}", persistent, ephemeral.frame, ephemeral.index)?,
+                            None => writeln!(f, "{:5}: removed", persistent)?,
+                        }
+                    }
+                    Ok(())
+                },
+            )
+            .field_with("root", |f| write!(f, "{:?}", self.root))
+            .field_with(
+                "frames",
+                |f| {
+                    for (key, frame) in &self.frames {
+                        writeln!(f, "{:?}: ", key)?;
+                        match frame {
+                            EitherFrame::Meta(frame) => frame.fmt(f)?,
+                            EitherFrame::Element(frame) => frame.fmt(f)?,
+                        }
+                    }
+                    Ok(())
+                },
+            )
+            .finish()
+    }
+}
+
+impl<P: Position, E: Element> Display for PointList<P, E> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.is_empty() {
+            return f.write_str("[empty PointList]");
+        }
+
+        writeln!(f, "len: {}", self.len)?;
+        writeln!(f, "start: {}", self.start)?;
+        writeln!(f, "end: {}", self.end)?;
+        writeln!(f, "root: {:?}", self.root.unwrap().data())?;
+        writeln!(f)?;
+
+        let distance_width = self.end.to_string().len();
+        let index_width = (self.persistent_to_ephemeral.len() - 1).to_string().len();
+        let key_width = self.frames.keys().map(|key| format!("{:?}", key.data()).len()).max().unwrap();
+        let width = distance_width.max(index_width).max(key_width);
+
+        for (key, frame) in &self.frames {
+            writeln!(f, "{:?} (level {}):", key.data(), frame.level())?;
+            let distances: &Distances<P> = frame.distances();
+            for degree in (0..distances.depth).rev() {
+                let distances = &distances.distances;
+                for (index, &distance) in distances.iter().enumerate() {
+                    let index_degree = index.trailing_ones() as usize;
+                    match index_degree.cmp(&degree) {
+                        Ordering::Equal => write!(f, "{:·>width$} ", distance, width = width)?,
+                        Ordering::Greater => write!(f, "{:>width$} ", "╎", width = width)?,
+                        Ordering::Less => if (index >> degree) & 1 == 0 {
+                            write!(f, "{}", "·".repeat(width + 1))?;
+                        } else {
+                            write!(f, "{}", " ".repeat(width + 1))?;
+                        },
+                    }
+                }
+                writeln!(f)?;
+            }
+            match frame {
+                EitherFrame::Meta(frame) => {
+                    for key in &frame.frames {
+                        write!(f, "{:>width$?} ", key.data(), width = width)?;
+                    }
+                }
+                EitherFrame::Element(frame) => {
+                    for index in &frame.persistent_indices {
+                        write!(f, "{:>width$?} ", index.index, width = width)?;
+                    }
+                }
+            }
+            writeln!(f)?;
+            writeln!(f)?;
+        }
+
+        for (persistent, ephemeral) in self.persistent_to_ephemeral.iter().enumerate() {
+            if let Some(ephemeral) = ephemeral {
+                writeln!(f, "{:>width$}: {:?} ({:?}/{})", persistent, self.element(PersistentIndex::new(persistent)).unwrap(), ephemeral.frame.data(), ephemeral.index, width = width)?;
+            } else {
+                writeln!(f, "{:>width$}: removed", persistent, width = width)?;
+            }
+        }
+
+        /*
+        _______________
+        _______     421
+        ___ 324 ___
+        231     212
+        000 001 002 003
+
+        ············421
+        ····324       ╎ ····713
+        231   ╎ 212   ╎ 465   ╎
+        000 001 010 011 100 101
+         */
+
+        Ok(())
     }
 }
 

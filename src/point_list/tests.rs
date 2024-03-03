@@ -75,4 +75,19 @@ fn test_add_element_and_position() {
     assert_eq!(list.position(c_index), Some(9));
     assert_eq!(list.element(d_index), Some(&'d'));
     assert_eq!(list.position(d_index), Some(10));
+
+    println!("{}", list);
+}
+
+#[test]
+fn test_add_element_and_position_2() {
+    let mut list = PointList::new();
+    for i in 0..(1 << 9) {
+        let index = list.add_element((), 1);
+        // assert_eq!(list.len(), i + 1);
+        // assert_eq!(list.start(), 1);
+        // assert_eq!(list.position(index), Some(i + 1));
+    }
+
+    println!("{}", list);
 }

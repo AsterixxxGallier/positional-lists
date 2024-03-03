@@ -2,6 +2,8 @@
 #![feature(trait_alias)]
 // for debug_assert_matches
 #![feature(assert_matches)]
+// for "impl Debug for PointList"
+#![feature(debug_closure_helpers)]
 
 #![allow(dead_code)]
 
