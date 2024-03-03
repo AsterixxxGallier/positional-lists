@@ -1,4 +1,4 @@
-use crate::frame::FrameKey;
+use crate::FrameKey;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub(crate) struct EphemeralIndex {

@@ -12,17 +12,21 @@ mod index;
 
 #[doc(inline)]
 pub use {
+    index::PersistentIndex,
+    point_list::PointList,
     trait_aliases::Element,
     trait_aliases::Position,
-    point_list::PointList,
-    index::PersistentIndex,
 };
 
 #[allow(unused_imports)]
 pub(crate) use {
     frame::Frame,
-    frame::FrameKey,
-    frame::Slot,
+    frame::EitherFrame,
+    frame::meta::MetaFrame,
+    frame::element::ElementFrame,
+    frame::distances::Distances,
     frame::Embedding,
+    frame::FrameKey,
+
     index::EphemeralIndex,
 };
