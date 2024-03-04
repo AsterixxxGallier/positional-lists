@@ -3,6 +3,7 @@ use std::fmt::{Debug, Display, Formatter};
 use slotmap::{Key, SlotMap};
 use num_traits::zero;
 use crate::{Position, Element, Frame, EitherFrame, MetaFrame, ElementFrame, Distances, Embedding, FrameKey, EphemeralIndex, PersistentIndex};
+use crate::frame::DISTANCES_DEPTH;
 
 pub struct PointList<P: Position, E: Element> {
     frames: SlotMap<FrameKey, EitherFrame<P, E>>,
@@ -260,7 +261,7 @@ impl<P: Position, E: Element> Display for PointList<P, E> {
         for (key, frame) in &self.frames {
             writeln!(f, "{:?} (level {}):", key.data(), frame.level())?;
             let distances: &Distances<P> = frame.distances();
-            for degree in (0..distances.depth).rev() {
+            for degree in (0..DISTANCES_DEPTH).rev() {
                 let distances = &distances.distances;
                 for (index, &distance) in distances.iter().enumerate() {
                     let index_degree = index.trailing_ones() as usize;
@@ -299,19 +300,6 @@ impl<P: Position, E: Element> Display for PointList<P, E> {
                 writeln!(f, "{:>width$}: removed", persistent, width = width)?;
             }
         }
-
-        /*
-        _______________
-        _______     421
-        ___ 324 ___
-        231     212
-        000 001 002 003
-
-        ············421
-        ····324       ╎ ····713
-        231   ╎ 212   ╎ 465   ╎
-        000 001 010 011 100 101
-         */
 
         Ok(())
     }

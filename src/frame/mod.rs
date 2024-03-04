@@ -9,8 +9,10 @@ pub(crate) mod distances;
 #[cfg(test)]
 mod tests;
 
-pub(crate) const FRAME_CAPACITY: usize = 256;
-pub(crate) const DISTANCES_CAPACITY: usize = FRAME_CAPACITY - 1;
+pub(crate) const DISTANCES_DEPTH: usize = 9;
+// Must be a power of two.
+pub(crate) const DISTANCES_CAPACITY: usize = 1 << (DISTANCES_DEPTH - 1);
+pub(crate) const FRAME_CAPACITY: usize = DISTANCES_CAPACITY + 1;
 
 new_key_type! { pub(crate) struct FrameKey; }
 

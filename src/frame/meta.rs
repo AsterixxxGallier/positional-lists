@@ -25,11 +25,10 @@ impl<P: Position> MetaFrame<P> {
 
     pub(crate) fn check_invariants(&self) {
         debug_assert!(!self.frames.is_empty());
-        debug_assert_eq!(self.frames.len(), self.distances.distances.len() + 1);
     }
 
     pub(crate) fn is_full(&self) -> bool {
-        self.distances.is_full()
+        self.frames.is_full()
     }
 
     /// `distance_from_last` must be non-negative.
@@ -38,7 +37,7 @@ impl<P: Position> MetaFrame<P> {
 
         self.check_invariants();
 
-        self.distances.add_distance(distance_from_last);
+        self.distances.increase_distance(self.frames.len() - 1, distance_from_last);
 
         self.frames.push(key);
 

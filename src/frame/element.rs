@@ -26,12 +26,11 @@ impl<P: Position, E: Element> ElementFrame<P, E> {
 
     pub(crate) fn check_invariants(&self) {
         debug_assert!(!self.elements.is_empty());
-        debug_assert_eq!(self.elements.len(), self.distances.distances.len() + 1);
         debug_assert_eq!(self.persistent_indices.len(), self.elements.len());
     }
 
     pub(crate) fn is_full(&self) -> bool {
-        self.distances.is_full()
+        self.elements.is_full()
     }
 
     /// `distance_from_last` must be non-negative.
@@ -40,7 +39,7 @@ impl<P: Position, E: Element> ElementFrame<P, E> {
 
         self.check_invariants();
 
-        self.distances.add_distance(distance_from_last);
+        self.distances.increase_distance(self.elements.len() - 1, distance_from_last);
 
         self.elements.push(element);
         self.persistent_indices.push(persistent_index);
