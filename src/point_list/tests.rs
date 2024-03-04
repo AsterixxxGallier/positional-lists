@@ -82,12 +82,10 @@ fn test_add_element_and_position() {
 #[test]
 fn test_add_element_and_position_2() {
     let mut list = PointList::new();
-    for i in 0..(1 << 9) {
+    for i in 0..(1 << 20) {
         let index = list.add_element((), 1);
-        // assert_eq!(list.len(), i + 1);
-        // assert_eq!(list.start(), 1);
-        // assert_eq!(list.position(index), Some(i + 1));
+        assert_eq!(list.len(), i + 1);
+        assert_eq!(list.start(), 1);
+        assert_eq!(list.position(index), Some(i + 1));
     }
-
-    println!("{}", list);
 }

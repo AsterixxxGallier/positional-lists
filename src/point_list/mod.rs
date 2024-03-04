@@ -2,8 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::{Debug, Display, Formatter};
 use slotmap::{Key, SlotMap};
 use num_traits::zero;
-use crate::{Position, Element, Frame, EitherFrame, MetaFrame, ElementFrame, Embedding, FrameKey, EphemeralIndex, PersistentIndex};
-use crate::frame::distances::Distances;
+use crate::{Position, Element, Frame, EitherFrame, MetaFrame, ElementFrame, Distances, Embedding, FrameKey, EphemeralIndex, PersistentIndex};
 
 pub struct PointList<P: Position, E: Element> {
     frames: SlotMap<FrameKey, EitherFrame<P, E>>,
@@ -69,6 +68,15 @@ impl<P: Position, E: Element> PointList<P, E> {
                 !frame.is_full() || self.element_can_be_added_to(frame.last_frame()),
             EitherFrame::Element(frame) =>
                 !frame.is_full(),
+        }
+    }
+
+    fn length_of(&self, frame_key: FrameKey) -> P {
+        match &self.frames[frame_key] {
+            EitherFrame::Meta(frame) =>
+                frame.distances.length() + self.length_of(frame.last_frame()),
+            EitherFrame::Element(frame) =>
+                frame.distances.length()
         }
     }
 
@@ -147,8 +155,9 @@ impl<P: Position, E: Element> PointList<P, E> {
                     // add current_frame to frame_with_full_last_frame
                     let index = self.frames[frame_with_full_last_frame].unwrap_meta().frames.len();
                     self.frames[current_frame].embed(Embedding::InMetaFrame(EphemeralIndex::new(frame_with_full_last_frame, index)));
-                    // TODO double-check the self.end - self.start part
-                    self.frames[frame_with_full_last_frame].unwrap_meta_mut().add_frame(current_frame, distance_from_last + (self.end - self.start));
+                    let length_of_last_frame = self.length_of(last_frame);
+                    let frame = self.frames[frame_with_full_last_frame].unwrap_meta_mut();
+                    frame.add_frame(current_frame, distance_from_last + length_of_last_frame);
                 }
                 AddElementStrategy::ElementCanBeAddedToExistingElementFrame {
                     element_frame

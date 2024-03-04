@@ -1,7 +1,7 @@
 use arrayvec::ArrayVec;
 use std::iter::once;
 use num_traits::zero;
-use crate::{Position, Element, Distances, Embedding, PersistentIndex};
+use crate::{Position, Element, Frame, Distances, Embedding, PersistentIndex};
 use super::FRAME_CAPACITY;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -46,5 +46,23 @@ impl<P: Position, E: Element> ElementFrame<P, E> {
         self.persistent_indices.push(persistent_index);
 
         self.elements.len() - 1
+    }
+}
+
+impl<P: Position, E: Element> Frame<P> for ElementFrame<P, E> {
+    fn distances(&self) -> &Distances<P> {
+        &self.distances
+    }
+
+    fn level(&self) -> usize {
+        0
+    }
+
+    fn embedding(&self) -> Embedding {
+        self.embedding
+    }
+
+    fn embed(&mut self, embedding: Embedding) {
+        self.embedding = embedding;
     }
 }

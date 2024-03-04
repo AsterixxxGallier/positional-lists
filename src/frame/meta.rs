@@ -1,7 +1,7 @@
 use arrayvec::ArrayVec;
 use std::iter::once;
 use num_traits::zero;
-use crate::{Position, Element, Frame, ElementFrame, Distances, Embedding, FrameKey};
+use crate::{Position, Frame, Distances, Embedding, FrameKey};
 use crate::frame::FRAME_CAPACITY;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -60,24 +60,6 @@ impl<P: Position> Frame<P> for MetaFrame<P> {
 
     fn level(&self) -> usize {
         self.level
-    }
-
-    fn embedding(&self) -> Embedding {
-        self.embedding
-    }
-
-    fn embed(&mut self, embedding: Embedding) {
-        self.embedding = embedding;
-    }
-}
-
-impl<P: Position, E: Element> Frame<P> for ElementFrame<P, E> {
-    fn distances(&self) -> &Distances<P> {
-        &self.distances
-    }
-
-    fn level(&self) -> usize {
-        0
     }
 
     fn embedding(&self) -> Embedding {

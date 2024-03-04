@@ -58,4 +58,8 @@ impl<P: Position> Distances<P> {
 
         position
     }
+
+    pub(crate) fn length(&self) -> P {
+        self.position(DISTANCES_CAPACITY)
+    }
 }
