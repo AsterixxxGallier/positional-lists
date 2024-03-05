@@ -1,6 +1,9 @@
 use num_traits::zero;
 use crate::Position;
-use super::{DISTANCES_CAPACITY, DISTANCES_DEPTH};
+
+pub(crate) const DISTANCES_DEPTH: usize = 9;
+// Must be a power of two.
+pub(crate) const DISTANCES_CAPACITY: usize = 1 << (DISTANCES_DEPTH - 1);
 
 #[derive(Debug, Eq, PartialEq)]
 pub(crate) struct Distances<P: Position> {

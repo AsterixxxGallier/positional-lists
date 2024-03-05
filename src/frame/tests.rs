@@ -1,17 +1,21 @@
-use crate::{BaseFrame, Embedding, Index};
-use super::DISTANCES_CAPACITY;
+use slotmap::SlotMap;
+use crate::{BaseFrame, Embedding, DISTANCES_CAPACITY};
 
 #[test]
 fn test_add_element() {
-    let (mut frame, index) = BaseFrame::<usize>::new_with_index(Index::new(0), Embedding::InList);
+    let mut map = SlotMap::with_key();
+
+    let key_0 = map.insert(());
+    let (mut frame, index) = BaseFrame::<usize>::new_with_key(key_0, Embedding::InList);
 
     assert_eq!(index, 0);
     assert_eq!(frame.distances.distances, [0; DISTANCES_CAPACITY]);
-    let mut iter = frame.indices.iter();
-    assert_eq!(iter.next(), Some(&Index::new(0)));
+    let mut iter = frame.keys.iter();
+    assert_eq!(iter.next(), Some(&key_0));
     assert_eq!(iter.next(), None);
 
-    let index = frame.add_index(Index::new(1), 1);
+    let key_1 = map.insert(());
+    let index = frame.add_key(key_1, 1);
 
     assert_eq!(index, 1);
     assert_eq!(frame.distances.distances, [
@@ -24,12 +28,13 @@ fn test_add_element() {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
     ]);
-    let mut iter = frame.indices.iter();
-    assert_eq!(iter.next(), Some(&Index::new(0)));
-    assert_eq!(iter.next(), Some(&Index::new(1)));
+    let mut iter = frame.keys.iter();
+    assert_eq!(iter.next(), Some(&key_0));
+    assert_eq!(iter.next(), Some(&key_1));
     assert_eq!(iter.next(), None);
 
-    let index = frame.add_index(Index::new(2), 2);
+    let key_2 = map.insert(());
+    let index = frame.add_key(key_2, 2);
 
     assert_eq!(index, 2);
     assert_eq!(frame.distances.distances, [
@@ -42,13 +47,14 @@ fn test_add_element() {
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
    ]);
-    let mut iter = frame.indices.iter();
-    assert_eq!(iter.next(), Some(&Index::new(0)));
-    assert_eq!(iter.next(), Some(&Index::new(1)));
-    assert_eq!(iter.next(), Some(&Index::new(2)));
+    let mut iter = frame.keys.iter();
+    assert_eq!(iter.next(), Some(&key_0));
+    assert_eq!(iter.next(), Some(&key_1));
+    assert_eq!(iter.next(), Some(&key_2));
     assert_eq!(iter.next(), None);
 
-    let index = frame.add_index(Index::new(3), 3);
+    let key_3 = map.insert(());
+    let index = frame.add_key(key_3, 3);
 
     assert_eq!(index, 3);
     assert_eq!(frame.distances.distances, [
@@ -61,14 +67,15 @@ fn test_add_element() {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6,
     ]);
-    let mut iter = frame.indices.iter();
-    assert_eq!(iter.next(), Some(&Index::new(0)));
-    assert_eq!(iter.next(), Some(&Index::new(1)));
-    assert_eq!(iter.next(), Some(&Index::new(2)));
-    assert_eq!(iter.next(), Some(&Index::new(3)));
+    let mut iter = frame.keys.iter();
+    assert_eq!(iter.next(), Some(&key_0));
+    assert_eq!(iter.next(), Some(&key_1));
+    assert_eq!(iter.next(), Some(&key_2));
+    assert_eq!(iter.next(), Some(&key_3));
     assert_eq!(iter.next(), None);
 
-    let index = frame.add_index(Index::new(4), 3);
+    let key_4 = map.insert(());
+    let index = frame.add_key(key_4, 3);
 
     assert_eq!(index, 4);
     assert_eq!(frame.distances.distances, [
@@ -81,11 +88,11 @@ fn test_add_element() {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,
     ]);
-    let mut iter = frame.indices.iter();
-    assert_eq!(iter.next(), Some(&Index::new(0)));
-    assert_eq!(iter.next(), Some(&Index::new(1)));
-    assert_eq!(iter.next(), Some(&Index::new(2)));
-    assert_eq!(iter.next(), Some(&Index::new(3)));
-    assert_eq!(iter.next(), Some(&Index::new(4)));
+    let mut iter = frame.keys.iter();
+    assert_eq!(iter.next(), Some(&key_0));
+    assert_eq!(iter.next(), Some(&key_1));
+    assert_eq!(iter.next(), Some(&key_2));
+    assert_eq!(iter.next(), Some(&key_3));
+    assert_eq!(iter.next(), Some(&key_4));
     assert_eq!(iter.next(), None);
 }

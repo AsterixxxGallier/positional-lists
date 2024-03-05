@@ -1,6 +1,6 @@
 use enum_dispatch::enum_dispatch;
 use slotmap::new_key_type;
-use crate::{Position, MetaFrame, BaseFrame, Distances, EphemeralIndex};
+use crate::{Position, MetaFrame, BaseFrame, Distances, DISTANCES_CAPACITY};
 
 pub(crate) mod meta;
 pub(crate) mod base;
@@ -9,16 +9,25 @@ pub(crate) mod distances;
 #[cfg(test)]
 mod tests;
 
-pub(crate) const DISTANCES_DEPTH: usize = 9;
-// Must be a power of two.
-pub(crate) const DISTANCES_CAPACITY: usize = 1 << (DISTANCES_DEPTH - 1);
 pub(crate) const FRAME_CAPACITY: usize = DISTANCES_CAPACITY + 1;
 
 new_key_type! { pub(crate) struct FrameKey; }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(crate) struct IndexInFrame {
+    pub(crate) frame: FrameKey,
+    pub(crate) index: usize,
+}
+
+impl IndexInFrame {
+    pub(crate) fn new(frame: FrameKey, index: usize) -> Self {
+        Self { frame, index }
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub(crate) enum Embedding {
-    InMetaFrame(EphemeralIndex),
+    InMetaFrame(IndexInFrame),
     InList,
 }
 

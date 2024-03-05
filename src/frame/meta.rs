@@ -1,8 +1,7 @@
 use arrayvec::ArrayVec;
 use std::iter::once;
 use num_traits::zero;
-use crate::{Position, Frame, Distances, Embedding, FrameKey};
-use crate::frame::FRAME_CAPACITY;
+use crate::{Position, Frame, Distances, Embedding, FrameKey, FRAME_CAPACITY};
 
 #[derive(Debug, Eq, PartialEq)]
 pub(crate) struct MetaFrame<P: Position> {
@@ -31,7 +30,7 @@ impl<P: Position> MetaFrame<P> {
         self.frames.is_full()
     }
 
-    /// `distance_from_last` must be non-negative.
+    /// `distance_from_last` must be positive.
     pub(crate) fn add_frame(&mut self, key: FrameKey, distance_from_last: P) -> usize {
         // Distances of zero are not allowed.
         debug_assert!(distance_from_last > zero());

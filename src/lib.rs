@@ -10,12 +10,11 @@
 mod trait_aliases;
 mod point_list;
 mod frame;
-mod index;
 
 #[doc(inline)]
 pub use {
-    index::Index,
     point_list::PointList,
+    point_list::PointKey,
     trait_aliases::Element,
     trait_aliases::Position,
 };
@@ -29,6 +28,9 @@ pub(crate) use {
     frame::distances::Distances,
     frame::Embedding,
     frame::FrameKey,
+    frame::IndexInFrame,
 
-    index::EphemeralIndex,
+    frame::FRAME_CAPACITY,
+    frame::distances::DISTANCES_DEPTH,
+    frame::distances::DISTANCES_CAPACITY,
 };
