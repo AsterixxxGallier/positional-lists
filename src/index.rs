@@ -13,11 +13,11 @@ impl EphemeralIndex {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct PersistentIndex {
+pub struct Index {
     pub(crate) index: usize,
 }
 
-impl PersistentIndex {
+impl Index {
     pub fn new(index: usize) -> Self {
         Self { index }
     }

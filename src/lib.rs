@@ -14,7 +14,7 @@ mod index;
 
 #[doc(inline)]
 pub use {
-    index::PersistentIndex,
+    index::Index,
     point_list::PointList,
     trait_aliases::Element,
     trait_aliases::Position,
@@ -25,7 +25,7 @@ pub(crate) use {
     frame::Frame,
     frame::EitherFrame,
     frame::meta::MetaFrame,
-    frame::element::ElementFrame,
+    frame::base::BaseFrame,
     frame::distances::Distances,
     frame::Embedding,
     frame::FrameKey,

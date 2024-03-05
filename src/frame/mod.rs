@@ -1,9 +1,9 @@
 use enum_dispatch::enum_dispatch;
 use slotmap::new_key_type;
-use crate::{Position, Element, MetaFrame, ElementFrame, Distances, EphemeralIndex};
+use crate::{Position, MetaFrame, BaseFrame, Distances, EphemeralIndex};
 
 pub(crate) mod meta;
-pub(crate) mod element;
+pub(crate) mod base;
 pub(crate) mod distances;
 
 #[cfg(test)]
@@ -32,36 +32,36 @@ pub(crate) trait Frame<P: Position> {
 
 #[enum_dispatch(Frame<P>)]
 #[derive(Debug, Eq, PartialEq)]
-pub(crate) enum EitherFrame<P: Position, E: Element> {
+pub(crate) enum EitherFrame<P: Position> {
     Meta(MetaFrame<P>),
-    Element(ElementFrame<P, E>),
+    Base(BaseFrame<P>),
 }
 
-impl<P: Position, E: Element> EitherFrame<P, E> {
+impl<P: Position> EitherFrame<P> {
     pub(crate) fn unwrap_meta(&self) -> &MetaFrame<P> {
         match self {
             EitherFrame::Meta(frame) => frame,
-            EitherFrame::Element(_) => unreachable!(),
+            EitherFrame::Base(_) => unreachable!(),
         }
     }
 
     pub(crate) fn unwrap_meta_mut(&mut self) -> &mut MetaFrame<P> {
         match self {
             EitherFrame::Meta(frame) => frame,
-            EitherFrame::Element(_) => unreachable!(),
+            EitherFrame::Base(_) => unreachable!(),
         }
     }
 
-    pub(crate) fn unwrap_element(&self) -> &ElementFrame<P, E> {
+    pub(crate) fn unwrap_base(&self) -> &BaseFrame<P> {
         match self {
-            EitherFrame::Element(frame) => frame,
+            EitherFrame::Base(frame) => frame,
             EitherFrame::Meta(_) => unreachable!(),
         }
     }
 
-    pub(crate) fn unwrap_element_mut(&mut self) -> &mut ElementFrame<P, E> {
+    pub(crate) fn unwrap_base_mut(&mut self) -> &mut BaseFrame<P> {
         match self {
-            EitherFrame::Element(frame) => frame,
+            EitherFrame::Base(frame) => frame,
             EitherFrame::Meta(_) => unreachable!(),
         }
     }

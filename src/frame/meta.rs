@@ -7,7 +7,7 @@ use crate::frame::FRAME_CAPACITY;
 #[derive(Debug, Eq, PartialEq)]
 pub(crate) struct MetaFrame<P: Position> {
     pub(crate) distances: Distances<P>,
-    /// `frames.len()` must equal `distances.distances.len() + 1`
+    /// May not be empty.
     pub(crate) frames: ArrayVec<FrameKey, FRAME_CAPACITY>,
     pub(crate) level: usize,
     pub(crate) embedding: Embedding,
@@ -33,14 +33,12 @@ impl<P: Position> MetaFrame<P> {
 
     /// `distance_from_last` must be non-negative.
     pub(crate) fn add_frame(&mut self, key: FrameKey, distance_from_last: P) -> usize {
+        // Distances of zero are not allowed.
         debug_assert!(distance_from_last > zero());
-
         self.check_invariants();
 
         self.distances.increase_distance(self.frames.len() - 1, distance_from_last);
-
         self.frames.push(key);
-
         self.frames.len() - 1
     }
 
