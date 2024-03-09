@@ -4,6 +4,8 @@
 #![feature(assert_matches)]
 // for "impl Debug for PointList"
 #![feature(debug_closure_helpers)]
+// for the naive implementation of Distances::splice, to be replaced by a more efficient one
+#![feature(slice_range)]
 
 #![allow(dead_code)]
 

@@ -1,3 +1,5 @@
+use std::ops::{Range, RangeBounds};
+use std::slice;
 use num_traits::zero;
 use crate::Position;
 
@@ -26,6 +28,80 @@ impl<P: Position> Distances<P> {
         }
     }
 
+    /// Replaces the distances in `range` with `replace_with` zeroes.
+    fn splice<R: RangeBounds<usize>>(&mut self, range: R, replace_with: usize) {
+        // TODO more efficient implementation
+
+        let mut simple = self.simple();
+
+        let Range { start, end: splice_end } = slice::range(range, ..simple.len());
+        let replacement_end = start + replace_with;
+        let trailing_zeroes_start = simple.len() - (splice_end - start - replace_with);
+
+        simple.copy_within(splice_end.., replacement_end);
+        simple[start..replacement_end].fill(zero());
+        simple[trailing_zeroes_start..].fill(zero());
+
+        *self = Self::from_simple(simple);
+
+        /*
+        (old comment, maybe useful for efficient implementation of this function)
+
+        000 001 010 011
+        shift by 1
+        (zero) (000) (001 - 000) (001 + 010)
+
+        000 001 010 011
+        shift by 2
+        (zero) (zero) (000) (001)
+
+        000 001 010 011
+        shift by 3
+        (zero) (zero) (zero) (000)
+
+        000 001 010 011
+        shift by 4
+        (zero) (zero) (zero) (zero)
+
+        000 001 010 011
+        shift by -1
+        (001 - 000) (010) (011 - (001 + 010)) (zero)
+
+         a   b   c   d   e   f   g   h
+        000 001 010 011 100 101 110 111
+         a  a+b  c       e  e+f  g
+                  a+b+c+d     a+b+c+d+e+f+g+h
+        shift by 1
+         a'  b'  c'  d'  e'  f'  g'  h'
+         0   a   b   c   d   e   f   g
+        000'001'010'011'100'101'110'111'
+             a  a+b  c       e  e+f  g
+                      a+b+c+d
+
+        by > 0: work leftwards, because new values don't depend on old values to their right
+         */
+    }
+
+    fn simple(&self) -> [P; DISTANCES_CAPACITY] {
+        let mut simple = self.distances;
+        for degree in (1..DISTANCES_DEPTH).rev() {
+            for index in (((1 << degree) - 1)..DISTANCES_CAPACITY).step_by(1 << degree) {
+                simple[index] -= simple[index - (1 << (degree - 1))];
+            }
+        }
+        simple
+    }
+
+    fn from_simple(simple: [P; DISTANCES_CAPACITY]) -> Self {
+        let mut distances = simple;
+        for degree in 1..DISTANCES_DEPTH {
+            for index in (((1 << degree) - 1)..DISTANCES_CAPACITY).step_by(1 << degree) {
+                distances[index] += distances[index - (1 << (degree - 1))];
+            }
+        }
+        Self { distances }
+    }
+
     pub(crate) fn position(&self, index: usize) -> P {
         let mut position = zero();
 
@@ -45,5 +121,68 @@ impl<P: Position> Distances<P> {
 
     pub(crate) fn length(&self) -> P {
         self.distances[DISTANCES_CAPACITY - 1]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use itertools::Itertools;
+    use rand::prelude::*;
+    use crate::{Distances, DISTANCES_CAPACITY};
+
+    #[test]
+    fn test_increase_distance() {
+        let mut rng = StdRng::seed_from_u64(0);
+        let mut distances = Distances::new();
+        let mut simple_distances = [0; DISTANCES_CAPACITY];
+        #[allow(clippy::needless_range_loop)]
+        for index in 0..DISTANCES_CAPACITY {
+            let value = rng.next_u32() as u64;
+            distances.increase_distance(index, value);
+            simple_distances[index] += value;
+        }
+        assert_eq!(distances.simple(), simple_distances);
+        assert_eq!(Distances::from_simple(distances.simple()), distances);
+    }
+
+    #[test]
+    fn test_splice() {
+        const HALF: usize = DISTANCES_CAPACITY >> 1;
+
+        let first_half = Distances::from_simple(
+            (0..DISTANCES_CAPACITY).map(|i| {
+                if (..HALF).contains(&i) { 1 } else { 0 }
+            }).collect_vec().try_into().unwrap()
+        );
+
+        let second_half = Distances::from_simple(
+            (0..DISTANCES_CAPACITY).map(|i| {
+                if (..HALF).contains(&i) { 0 } else { 1 }
+            }).collect_vec().try_into().unwrap()
+        );
+
+        let mut distances = Distances::from_simple([1u32; DISTANCES_CAPACITY]);
+        distances.splice(.., 0);
+        assert_eq!(distances, Distances::new());
+
+        let mut distances = Distances::from_simple([1u32; DISTANCES_CAPACITY]);
+        distances.splice(.., DISTANCES_CAPACITY);
+        assert_eq!(distances, Distances::new());
+
+        let mut distances = Distances::from_simple([1u32; DISTANCES_CAPACITY]);
+        distances.splice(..HALF, 0);
+        assert_eq!(distances, first_half);
+
+        let mut distances = Distances::from_simple([1u32; DISTANCES_CAPACITY]);
+        distances.splice(..HALF, HALF);
+        assert_eq!(distances, second_half);
+
+        let mut distances = Distances::from_simple([1u32; DISTANCES_CAPACITY]);
+        distances.splice(HALF.., 0);
+        assert_eq!(distances, first_half);
+
+        let mut distances = Distances::from_simple([1u32; DISTANCES_CAPACITY]);
+        distances.splice(HALF.., HALF);
+        assert_eq!(distances, first_half);
     }
 }
