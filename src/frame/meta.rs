@@ -3,7 +3,7 @@ use std::iter::once;
 use num_traits::zero;
 use crate::{Position, Frame, Distances, Embedding, FrameKey, FRAME_CAPACITY};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct MetaFrame<P: Position> {
     pub(crate) distances: Distances<P>,
     /// May not be empty.
@@ -41,6 +41,13 @@ impl<P: Position> MetaFrame<P> {
         self.frames.len() - 1
     }
 
+    pub(crate) fn first_frame(&self) -> FrameKey {
+        self.check_invariants();
+
+        // !self.frames.is_empty() is an invariant
+        *self.frames.last().unwrap()
+    }
+
     pub(crate) fn last_frame(&self) -> FrameKey {
         self.check_invariants();
 
@@ -50,6 +57,10 @@ impl<P: Position> MetaFrame<P> {
 }
 
 impl<P: Position> Frame<P> for MetaFrame<P> {
+    fn len(&self) -> usize {
+        self.frames.len()
+    }
+
     fn distances(&self) -> &Distances<P> {
         &self.distances
     }

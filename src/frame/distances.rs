@@ -7,7 +7,7 @@ pub(crate) const DISTANCES_DEPTH: usize = 9;
 // Must be a power of two.
 pub(crate) const DISTANCES_CAPACITY: usize = 1 << (DISTANCES_DEPTH - 1);
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub(crate) struct Distances<P: Position> {
     // TODO document contents of this Vec
     /// May not contain negative values.
@@ -28,8 +28,21 @@ impl<P: Position> Distances<P> {
         }
     }
 
+    /// The distance between index and index + 1.
+    pub(crate) fn distance(&self, index: usize) -> P {
+        let mut distance = self.distances[index];
+        for degree in 0..index.trailing_ones() {
+            distance -= self.distances[index - (1 << degree)];
+        }
+        distance
+    }
+
+    pub(crate) fn remove(&mut self, index: usize) {
+        self.splice(index..=index, 0)
+    }
+
     /// Replaces the distances in `range` with `replace_with` zeroes.
-    fn splice<R: RangeBounds<usize>>(&mut self, range: R, replace_with: usize) {
+    pub(crate) fn splice<R: RangeBounds<usize>>(&mut self, range: R, replace_with: usize) {
         // TODO more efficient implementation
 
         let mut simple = self.simple();
@@ -143,6 +156,8 @@ mod tests {
         }
         assert_eq!(distances.simple(), simple_distances);
         assert_eq!(Distances::from_simple(distances.simple()), distances);
+        let reproduced_simple = (0..DISTANCES_CAPACITY).map(|i| distances.distance(i)).collect_vec();
+        assert_eq!(simple_distances.to_vec(), reproduced_simple);
     }
 
     #[test]

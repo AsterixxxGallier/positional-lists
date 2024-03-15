@@ -3,7 +3,7 @@ use std::iter::once;
 use num_traits::zero;
 use crate::{Position, Frame, Distances, Embedding, PointKey, FRAME_CAPACITY};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) struct BaseFrame<P: Position> {
     pub(crate) distances: Distances<P>,
     /// May not be empty.
@@ -38,9 +38,27 @@ impl<P: Position> BaseFrame<P> {
         self.keys.push(key);
         self.keys.len() - 1
     }
+
+    pub(crate) fn first_key(&self) -> PointKey {
+        self.check_invariants();
+
+        // !self.keys.is_empty() is an invariant
+        *self.keys.first().unwrap()
+    }
+
+    pub(crate) fn last_key(&self) -> PointKey {
+        self.check_invariants();
+
+        // !self.keys.is_empty() is an invariant
+        *self.keys.last().unwrap()
+    }
 }
 
 impl<P: Position> Frame<P> for BaseFrame<P> {
+    fn len(&self) -> usize {
+        self.keys.len()
+    }
+
     fn distances(&self) -> &Distances<P> {
         &self.distances
     }

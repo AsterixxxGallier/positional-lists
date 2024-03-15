@@ -33,6 +33,7 @@ pub(crate) enum Embedding {
 
 #[enum_dispatch]
 pub(crate) trait Frame<P: Position> {
+    fn len(&self) -> usize;
     fn distances(&self) -> &Distances<P>;
     fn level(&self) -> usize;
     fn embedding(&self) -> Embedding;
@@ -40,7 +41,7 @@ pub(crate) trait Frame<P: Position> {
 }
 
 #[enum_dispatch(Frame<P>)]
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum EitherFrame<P: Position> {
     Meta(MetaFrame<P>),
     Base(BaseFrame<P>),
