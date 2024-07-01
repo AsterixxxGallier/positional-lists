@@ -35,8 +35,10 @@ pub(crate) enum Embedding {
 pub(crate) trait Frame<P: Position> {
     fn len(&self) -> usize;
     fn distances(&self) -> &Distances<P>;
+    fn distances_mut(&mut self) -> &mut Distances<P>;
     fn level(&self) -> usize;
     fn embedding(&self) -> Embedding;
+    fn embedding_mut(&mut self) -> &mut Embedding;
     fn embed(&mut self, embedding: Embedding);
 }
 
@@ -48,6 +50,13 @@ pub(crate) enum EitherFrame<P: Position> {
 }
 
 impl<P: Position> EitherFrame<P> {
+    pub(crate) fn unwrap_meta_owned(self) -> MetaFrame<P> {
+        match self {
+            EitherFrame::Meta(frame) => frame,
+            EitherFrame::Base(_) => unreachable!(),
+        }
+    }
+    
     pub(crate) fn unwrap_meta(&self) -> &MetaFrame<P> {
         match self {
             EitherFrame::Meta(frame) => frame,
@@ -59,6 +68,13 @@ impl<P: Position> EitherFrame<P> {
         match self {
             EitherFrame::Meta(frame) => frame,
             EitherFrame::Base(_) => unreachable!(),
+        }
+    }
+
+    pub(crate) fn unwrap_base_owned(self) -> BaseFrame<P> {
+        match self {
+            EitherFrame::Base(frame) => frame,
+            EitherFrame::Meta(_) => unreachable!(),
         }
     }
 

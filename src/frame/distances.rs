@@ -3,13 +3,13 @@ use std::slice;
 use num_traits::zero;
 use crate::Position;
 
-pub(crate) const DISTANCES_DEPTH: usize = 9;
+pub(crate) const DISTANCES_DEPTH: usize = 3;
 // Must be a power of two.
 pub(crate) const DISTANCES_CAPACITY: usize = 1 << (DISTANCES_DEPTH - 1);
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub(crate) struct Distances<P: Position> {
-    // TODO document contents of this Vec
+    // TODO document contents of this array
     /// May not contain negative values.
     pub(crate) distances: [P; DISTANCES_CAPACITY],
 }

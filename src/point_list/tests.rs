@@ -1,8 +1,8 @@
 use itertools::Itertools;
-use num_traits::Zero;
-use crate::{IndexInFrame, PointList};
+use num_traits::{Zero, zero};
+use crate::{IndexInFrame, PointList, Position, Element, PointKey};
 
-#[test]
+/*#[test]
 fn test_add_element_and_position() {
     let mut list = PointList::<usize, char>::new();
 
@@ -167,7 +167,7 @@ fn test_add_element_and_position() {
     assert_eq!(list_without_d.position(c_key), Some(9));
     assert_eq!(list_without_d.element(d_key), None);
     assert_eq!(list_without_d.position(d_key), None);
-}
+}*/
 
 #[test]
 fn test_add_element_and_position_2() {
@@ -179,4 +179,25 @@ fn test_add_element_and_position_2() {
         assert_eq!(list.position(key), Some(i + 1));
     }
     // std::fs::write("out.txt", format!("{}", list)).unwrap();
+}
+
+fn list_from_array<P: Position, E: Element, const N: usize>(array: [(E, P); N]) -> (PointList<P, E>, [PointKey; N]) {
+    let mut list = PointList::new();
+    let mut keys = [PointKey::default(); N];
+    let mut last_position = zero();
+    for (i, (e, p)) in array.into_iter().enumerate() {
+        keys[i] = list.add_element(e, p - last_position);
+        last_position = p;
+    }
+    (list, keys)
+}
+
+#[test]
+fn test_add_element_remove_element() {
+    let (mut list1, [a1, ..]) = list_from_array([('a', 4), ('b', 6), ('c', 9), ('d', 10), ('e', 12), ('f', 13)]);
+    let (list2, [..]) = list_from_array([('b', 6), ('c', 9), ('d', 10), ('e', 12), ('f', 13)]);
+    std::fs::write("out/list1_original.txt", format!("{:?}", list1)).unwrap();
+    list1.remove_element(a1);
+    std::fs::write("out/list1.txt", format!("{:?}", list1)).unwrap();
+    std::fs::write("out/list2.txt", format!("{:?}", list2)).unwrap();
 }

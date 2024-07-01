@@ -63,12 +63,20 @@ impl<P: Position> Frame<P> for BaseFrame<P> {
         &self.distances
     }
 
+    fn distances_mut(&mut self) -> &mut Distances<P> {
+        &mut self.distances
+    }
+
     fn level(&self) -> usize {
         0
     }
 
     fn embedding(&self) -> Embedding {
         self.embedding
+    }
+
+    fn embedding_mut(&mut self) -> &mut Embedding {
+        &mut self.embedding
     }
 
     fn embed(&mut self, embedding: Embedding) {

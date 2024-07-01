@@ -4,6 +4,7 @@ use num_traits::zero;
 use crate::{EitherFrame, Element, Embedding, Frame, FrameKey, IndexInFrame, Position};
 
 pub mod add_element;
+pub mod remove_element;
 pub mod debug;
 
 #[cfg(test)]
@@ -15,6 +16,7 @@ new_key_type! { pub struct PointKey; }
 #[derive(Clone)]
 pub struct PointList<P: Position, E: Element> {
     frames: SlotMap<FrameKey, EitherFrame<P>>,
+    // TODO put root, start and end all in the same Option (that is None for empty PointLists)?
     root: Option<FrameKey>,
     start: P,
     end: P,
@@ -123,7 +125,9 @@ impl<P: Position, E: Element> PointList<P, E> {
         Some(position)
     }
 
-    fn replenish_distance(&mut self, key: PointKey, index_in_frame: IndexInFrame, distance: P) {
+    // WIP
+
+    /*fn replenish_distance(&mut self, key: PointKey, index_in_frame: IndexInFrame, distance: P) {
         if key == self.first_key().unwrap() {
             self.start += distance;
         } else if index_in_frame.index == 0 {
@@ -131,58 +135,5 @@ impl<P: Position, E: Element> PointList<P, E> {
         } else {
             index_in_frame.frame.distances.increase_distance(index_of_removed - 1, distance);
         }
-    }
-
-    pub fn remove_element(&mut self, key: PointKey) -> Option<E> {
-        self.len -= 1;
-
-        let index_in_frame = self.point_indices.get(key)?;
-        let index_of_removed = index_in_frame.index;
-        // if self were empty, we would have returned None earlier
-        let first_key = self.first_key().unwrap();
-        let last_key = self.last_key().unwrap();
-        let frame = self.frames[index_in_frame.frame].unwrap_base_mut();
-
-        // move self.end when removing the last element
-        if key == last_key {
-            self.end -= frame.distances.distance(index_of_removed - 1);
-        }
-
-        // handle distances
-        let distance = frame.distances.distance(index_of_removed);
-        if index_of_removed == 0 {
-            // FIXME wrong logic: index_of_removed may be 0 without key being self.first_key(), then
-            //  frame is embedded in a MetaFrame, and the distance before frame in that MetaFrame
-            //  should be adjusted instead of self.start!
-
-            // move self.start when removing the first element
-            if key == first_key {
-                self.start += distance;
-            } else if let Embedding::InMetaFrame(index_in_meta_frame) = frame.embedding {
-                index_in_meta_frame.frame
-            } else {
-                unreachable!();
-            }
-
-        } else {
-            frame.distances.increase_distance(index_of_removed - 1, distance);
-        }
-        frame.distances.remove(index_of_removed);
-
-        // remove key
-        frame.keys.remove(index_of_removed);
-
-        // update point_indices
-        self.point_indices.remove(key);
-        for (index, &point_key) in frame.keys.iter().enumerate().skip(index_of_removed) {
-            self.point_indices[point_key].index = index;
-        }
-
-        // TODO if possible, join frame with the next / previous frame to prevent excessive
-        //  fragmentation of the PointList's structure
-
-        // FIXME this function does not yet protect against the creation of empty frames!
-
-        Some(self.elements.remove(key).unwrap())
-    }
+    }*/
 }

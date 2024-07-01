@@ -8,6 +8,8 @@
 #![feature(slice_range)]
 
 #![allow(dead_code)]
+// I like them
+#![allow(unused_doc_comments)]
 
 mod trait_aliases;
 mod point_list;

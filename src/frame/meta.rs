@@ -45,7 +45,7 @@ impl<P: Position> MetaFrame<P> {
         self.check_invariants();
 
         // !self.frames.is_empty() is an invariant
-        *self.frames.last().unwrap()
+        *self.frames.first().unwrap()
     }
 
     pub(crate) fn last_frame(&self) -> FrameKey {
@@ -65,12 +65,20 @@ impl<P: Position> Frame<P> for MetaFrame<P> {
         &self.distances
     }
 
+    fn distances_mut(&mut self) -> &mut Distances<P> {
+        &mut self.distances
+    }
+
     fn level(&self) -> usize {
         self.level
     }
 
     fn embedding(&self) -> Embedding {
         self.embedding
+    }
+
+    fn embedding_mut(&mut self) -> &mut Embedding {
+        &mut self.embedding
     }
 
     fn embed(&mut self, embedding: Embedding) {

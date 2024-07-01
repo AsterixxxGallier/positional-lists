@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use slotmap::Key;
 use crate::{Element, PointList, Position};
 use crate::frame::distances::{Distances, DISTANCES_DEPTH};
-use crate::frame::{EitherFrame, Frame};
+use crate::frame::{EitherFrame, Frame, FRAME_CAPACITY};
 
 impl<P: Position, E: Element> Debug for PointList<P, E> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -26,6 +26,7 @@ impl<P: Position, E: Element> Debug for PointList<P, E> {
             writeln!(f, "{:?} (level {}):", key.data(), frame.level())?;
             let distances: &Distances<P> = frame.distances();
             for degree in (0..DISTANCES_DEPTH).rev() {
+                write!(f, "{}", "·".repeat(width + 1))?;
                 let distances = &distances.distances;
                 for (index, &distance) in distances.iter().enumerate() {
                     let index_degree = index.trailing_ones() as usize;
@@ -43,13 +44,21 @@ impl<P: Position, E: Element> Debug for PointList<P, E> {
             }
             match frame {
                 EitherFrame::Meta(frame) => {
-                    for key in &frame.frames {
-                        write!(f, "{:>width$?} ", key.data(), width = width)?;
+                    for i in 0..FRAME_CAPACITY {
+                        if let Some(key) = frame.frames.get(i) {
+                            write!(f, "{:>width$?} ", key.data(), width = width)?;
+                        } else {
+                            write!(f, "{} ", "-".repeat(width))?;
+                        }
                     }
                 }
                 EitherFrame::Base(frame) => {
-                    for key in &frame.keys {
-                        write!(f, "{:>width$?} ", key.data(), width = width)?;
+                    for i in 0..FRAME_CAPACITY {
+                        if let Some(key) = frame.keys.get(i) {
+                            write!(f, "{:>width$?} ", key.data(), width = width)?;
+                        } else {
+                            write!(f, "{} ", "-".repeat(width))?;
+                        }
                     }
                 }
             }

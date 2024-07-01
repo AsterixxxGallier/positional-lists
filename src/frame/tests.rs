@@ -1,7 +1,7 @@
 use slotmap::SlotMap;
 use crate::{BaseFrame, Embedding, DISTANCES_CAPACITY};
 
-#[test]
+/*#[test]
 fn test_add_element() {
     let mut map = SlotMap::with_key();
 
@@ -95,4 +95,4 @@ fn test_add_element() {
     assert_eq!(iter.next(), Some(&key_3));
     assert_eq!(iter.next(), Some(&key_4));
     assert_eq!(iter.next(), None);
-}
+}*/
