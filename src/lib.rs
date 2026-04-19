@@ -1,12 +1,7 @@
 // for Position
 #![feature(trait_alias)]
-// for debug_assert_matches
-#![feature(assert_matches)]
-// for "impl Debug for PointList"
-#![feature(debug_closure_helpers)]
 // for the naive implementation of Distances::splice, to be replaced by a more efficient one
 #![feature(slice_range)]
-
 #![allow(dead_code)]
 // I like them
 #![allow(unused_doc_comments)]
@@ -14,6 +9,8 @@
 mod trait_aliases;
 mod point_list;
 mod frame;
+mod span_tree;
+mod distances;
 
 #[doc(inline)]
 pub use {

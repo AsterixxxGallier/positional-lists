@@ -1,6 +1,5 @@
-use itertools::Itertools;
-use num_traits::{Zero, zero};
-use crate::{IndexInFrame, PointList, Position, Element, PointKey};
+use crate::{Element, PointKey, PointList, Position};
+use num_traits::zero;
 
 /*#[test]
 fn test_add_element_and_position() {
@@ -181,7 +180,9 @@ fn test_add_element_and_position_2() {
     // std::fs::write("out.txt", format!("{}", list)).unwrap();
 }
 
-fn list_from_array<P: Position, E: Element, const N: usize>(array: [(E, P); N]) -> (PointList<P, E>, [PointKey; N]) {
+fn list_from_array<P: Position, E: Element, const N: usize>(
+    array: [(E, P); N],
+) -> (PointList<P, E>, [PointKey; N]) {
     let mut list = PointList::new();
     let mut keys = [PointKey::default(); N];
     let mut last_position = zero();
@@ -194,7 +195,14 @@ fn list_from_array<P: Position, E: Element, const N: usize>(array: [(E, P); N]) 
 
 #[test]
 fn test_add_element_remove_element() {
-    let (mut list1, [a1, ..]) = list_from_array([('a', 4), ('b', 6), ('c', 9), ('d', 10), ('e', 12), ('f', 13)]);
+    let (mut list1, [a1, ..]) = list_from_array([
+        ('a', 4),
+        ('b', 6),
+        ('c', 9),
+        ('d', 10),
+        ('e', 12),
+        ('f', 13),
+    ]);
     let (list2, [..]) = list_from_array([('b', 6), ('c', 9), ('d', 10), ('e', 12), ('f', 13)]);
     std::fs::write("out/list1_original.txt", format!("{:?}", list1)).unwrap();
     list1.remove_element(a1);

@@ -1,6 +1,3 @@
-use slotmap::SlotMap;
-use crate::{BaseFrame, Embedding, DISTANCES_CAPACITY};
-
 /*#[test]
 fn test_add_element() {
     let mut map = SlotMap::with_key();
